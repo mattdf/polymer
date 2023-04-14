@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT Solidity Analyzer (Skynet/TurboPotato/Polymerizer)</title>
+
+    <link href="static/prism.css" rel="stylesheet" />
+    <script src="static/prism.js"></script>
+    <script src="static/main.js"></script>
+    <link rel="stylesheet" href="static/main.css">
+</head>
+<body>
+    <div id="main-container">
+        <div id="chat-container">
+            <div id="tab-buttons-left">
+                <button id="chat-tab-btn" class="active-tab">Chat</button>
+                <button id="code-tab-btn">Code</button>
+                <button id="analysis-tab-btn">Analysis</button>
+            </div>
+            <div id="chat-tab">
+                <div id="messages">
+                    <!-- Messages will be appended here -->
+                </div>
+                <form id="message-form">
+                    <input type="text" id="message-input" placeholder="Type your message...">
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+            <div id="code-tab" style="display: none;">
+                <div id="code-editor">
+                    <pre class="line-numbers linkable-line-numbers" id="pre-code-block"><code id="code-block" class="language-solidity">
+                        // Code will be added here
+                    </code></pre>
+                </div>
+            </div>
+            <div id="analysis-tab" style="display: none;">
+
+            </div>
+        </div>
+        <div id="list-pane">
+            <div id="tab-buttons">
+                <button id="load-tab-btn" class="active-tab">Load contracts</button>
+                <button id="analyze-tab-btn">Analyze Code</button>
+            </div>
+            <div id="load-tab">
+                <form id="list-url-form">
+                    <input type="text" id="list-url-input" placeholder="Enter GitHub URL">
+                    <button type="submit" id="load-list-btn">Load contracts</button>
+                </form>
+                <div id="analyze-button-container">
+                    <button id="analyze-button">Load selected files</button>
+                </div>
+                <div id="loading-container">
+                    <div id="loading-spinner"></div>
+                </div>
+                <div id="list-container">
+                    <!-- List items with checkboxes will be added here -->
+                </div>
+            </div>
+            <div id="analyze-tab" style="display: none;">
+                <form id="analyze-form">
+                    <button type="submit" id="analyze-btn">Analyze</button>
+                    <select id="analyze-prompt" name="prompt"></select>
+                </form>
+                <div id="analysis-results">
+                    <!-- Analysis results will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
