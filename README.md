@@ -19,3 +19,8 @@ $ make api
  * https://swcregistry.io/
  * https://www.dasp.co/
  * https://consensys.github.io/smart-contract-best-practices/
+
+## Repos for testing
+
+ * https://github.com/shamb0/ssec-swc-101-int-ouflow
+ 

@@ -424,5 +424,5 @@ li:nth-child(odd) {
 }
 
 code[class*="language-"], pre[class*="language-"] {
-    color: #333 !important
+    background: #333;
 }
