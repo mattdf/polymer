@@ -169,7 +169,7 @@ async def analyze(workspace_id:str, data:AnalyzeInput):
     })
     ajpath = 'analyzer', info['cid'] + '.json'
     if not w.exists(*ajpath):
-        info['code_outputs'] = extract_markdown_codes(info['result'])
+        info['code_outputs'] = extract_markdown_codes(info['result'])           
         info['run'] = w.run_codes(info['cid'], info['code_outputs'])
         with w.open('w', *ajpath) as handle:
             handle.write(json.dumps(info))

@@ -79,6 +79,9 @@ class Workspace:
                     handle.write(ah.read())
         for i, c in enumerate(codes):
             lang, code = c
+            if 'z3.' in code and 'import z3' not in code:
+                code = "import z3\n" + code
+            print(code)
             if lang is None:
                 lang = 'txt'
             path = ('analyzer', f'{cid}.{i}.{lang}')
@@ -106,7 +109,14 @@ class Workspace:
             if self.exists('analyzer', f'{cid}.{i}.{lang}.run'):
                 with self.open('r', 'analyzer', f'{cid}.{i}.{lang}.run') as handle:
                     run = json.load(handle)
-            res.append([lang, code, stdout, stderr, harness_stdout, harness_stderr, run])
+            res.append(dict(
+                lang=lang,
+                code=code,
+                stdout=stdout,
+                stderr=stderr,
+                harness_stdout=harness_stdout,
+                harness_stderr=harness_stderr,
+                functions_return=run))
         return res
 
     def git_clone(self):

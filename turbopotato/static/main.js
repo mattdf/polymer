@@ -193,19 +193,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function load_repo(name) {    
-        const response = await fetch("/repo/" + name, {
-            method: "GET",
-            headers: {"Content-Type": "application/json"}
-        });        
-    
-        if (response.ok) {
-            const x = await response.json();
-            displayList(x.data.items);
-            workspace_id = name;
-            window.location.hash = x.workspace_id;
-        } else {
-            alert("Failed to load the list from the endpoint.");
-        }
+        const x = await http_get('/repo/'+name);
+        displayList(x.data.items);
+        workspace_id = name;
+        window.location.hash = x.workspace_id;
     }
 
     function displayAnalysisResult(result, container = null) {
@@ -452,6 +443,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // https://stackoverflow.com/questions/3662821/how-to-correctly-use-innerhtml-to-create-an-element-with-possible-children-fro
+    function createElement( str, children ) {
+        var frag = document.createDocumentFragment();
+        var elem = document.createElement('div');
+        elem.innerHTML = str;
+        while (elem.childNodes[0]) {
+            frag.appendChild(elem.childNodes[0]);
+        }
+        if( children ) {
+            for( let i = 0; i < children.length; i++ ) {
+                frag.appendChild(children);
+            }
+        }
+        return frag;
+    }    
+
     function addAnalysis(result)
     {        
         if( document.getElementById(result.cid) ) {
@@ -464,16 +471,42 @@ document.addEventListener("DOMContentLoaded", () => {
         e.setAttribute('id', result.cid);
         e.classList.add("res-output");
 
-        const f = document.createElement('div');
-        f.innerHTML = converter.makeHtml(result.result.choices[0].text);
-        e.appendChild(f);
+        e.appendChild(createElement(`
+        <h1>Analysis Result ${result.cid}</h1>
+        <h2>GPT Output</h2>
+        <div>
+            <pre>${result.result.choices[0].text}</pre>
+        </div>
+    `));
 
         if( result.run ) {
-            e.appendChild(document.createElement('hr'));
-            const g = document.createElement('pre');
-            g.innerHTML = syntaxHighlight(JSON.stringify(result.run[0][6], undefined, 4));
-            e.appendChild(g);
-        }        
+            for( let i = 0; i < result.run.length; i++ ) {
+                const el = createElement(`<div><h2>Code output ${i}</h2></div>`);
+                const x = result.run[i];
+                for( const cn of ['lang', 'code', 'stdout', 'stderr', 'harness_stdout', 'harness_stderr'] ) {
+                    const y = x[cn];
+                    if( y && y.length ) {
+                        el.appendChild(createElement(`
+                            <div class="run-result">
+                                <b>${cn}</b><br />
+                                <pre>${y}</pre>
+                            </div>
+                        `));
+                    }
+                }
+                if( x['functions_return'] ) {
+                    const y = syntaxHighlight(JSON.stringify(x['functions_return'], undefined, 4));
+                    el.appendChild(createElement(`
+                        <div class="run-result">
+                            <b>functions_return</b><br />
+                            <pre>${y}</pre>
+                        </div>
+                    `));
+                }
+                e.appendChild(el);
+            }
+        }
+        e.appendChild(createElement(`<hr />`));
 
         let append_to;
         if( result.ctx.parent_cid ) {

@@ -32,8 +32,6 @@ class ModifierInfo(_BaseInfo):
 class EventInfo(_BaseInfo):
     def signature(self):
         source = re.sub(r'[\s ]+', ' ', self.source(' ').replace('\n', ' ').replace('\r', '').replace('\t', ' '))
-        import json
-        print(json.dumps({'s':source}))
         sig = re.match(r'\s*(?P<sig>(event\s+)[^;)]*)', source).group('sig')
         return re.sub(r'[\s ]+', ' ', sig)
 

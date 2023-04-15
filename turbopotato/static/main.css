@@ -422,3 +422,7 @@ li:nth-child(odd) {
 	word-wrap: break-word;
 	white-space: break-spaces;
 }
+
+code[class*="language-"], pre[class*="language-"] {
+    color: #333 !important
+}
