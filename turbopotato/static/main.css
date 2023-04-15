@@ -270,25 +270,6 @@ input[type="checkbox"] {
     line-height: 1em;
 }
 
-.res-output {
-    margin: 10px;
-    padding: 10px;
-    width: 100%;
-    background: #eee;
-}
-
-pre {
-    background: #333;
-}
-
-pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
-.string { color: green; }
-.number { color: darkorange; }
-.boolean { color: blue; }
-.null { color: magenta; }
-.key { color: red; }
-
-
 #analysis-results li > label {
 }
 
@@ -431,4 +412,13 @@ li:nth-child(odd) {
 
 .line-highlight {
     background: linear-gradient(to right,hsla(24,20%,50%,.25) 70%,hsla(24,20%,50%,0)) !important;
+}
+
+#analysis-tab {
+	flex-direction: column;
+}
+
+#analysis-tab pre {
+	word-wrap: break-word;
+	white-space: break-spaces;
 }
