@@ -8,7 +8,7 @@ import requests
 import os
 
 from . import codextract
-from .openai import OPENAI_API_KEY, completion
+from .openai import OPENAI_API_KEY, completion, extract_markdown_codes
 from .codextract import ExtractedInfo
 from .prompts import PROMPTS
 from .pipeline import workspace_for_repo, workspace_by_name
@@ -147,16 +147,6 @@ async def source(workspace_id, file_list: FileList):
     joined_lines = "".join(collected_lines)
     return {"contracts": contracts_list, "lines": joined_lines}
 
-def _ranges_to_linenos(input_lines:list[int|tuple[int,int]]) -> set[int]:
-    v = []
-    for u in input_lines:
-        if isinstance(u, int):
-            v.append(u)
-        else:
-            w, x = u
-            v += list(range(w,x))
-    return set(v)
-
 class AnalyzeInput(BaseModel):
     prompt: str
     files: List[str]
@@ -171,13 +161,16 @@ async def analyze(workspace_id:str, data:AnalyzeInput):
         a, b = _.split(',')
         v = v.union(set(range(int(a),int(b)+1)))
     analyze_text = "".join([y for z, y in enumerate(_collect_files(workspace_id, data.files)) if z in v])
-    cache_ctx = {
+    info = completion(p, {'CODE': analyze_text}, cache_ctx={
         'file_list': data.files,
         'input_lines': data.lines,
         'workspace_id': workspace_id,
         'parent_cid': None
-    }
-    info = completion(p, {'CODE': analyze_text}, cache_ctx=cache_ctx)
-    with w.open('w', 'analyzer', info['cid'] + '.json') as handle:
-        handle.write(json.dumps(info))
-    return info
+    })
+    ajpath = 'analyzer', info['cid'] + '.json'
+    if True or not w.exists(*ajpath):
+        info['code_outputs'] = extract_markdown_codes(info['result'])
+        info['run'] = w.run_codes(info['cid'], info['code_outputs'])
+        with w.open('w', *ajpath) as handle:
+            handle.write(json.dumps(info))
+        return info

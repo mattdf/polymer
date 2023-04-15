@@ -1,0 +1,6 @@
+FROM node:lts
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y python3-pip
+RUN pip3 install pysmt z3-solver z4-solver
+RUN npm update -g npm
+RUN npm install -g pnpm hardhat truffle 

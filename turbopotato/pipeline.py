@@ -39,7 +39,9 @@ class Workspace:
         return os.path.exists(self.path(*args))
 
     def open(self, mode, *args):
-        return open(self.path(*args), mode)
+        p = self.path(*args)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        return open(p, mode)
 
     def reload(self):
         if self.exists('potato.json'):
@@ -61,6 +63,46 @@ class Workspace:
         else:
             self._config[k] = v
             return v
+        
+    def run_codes(self, cid, codes:list[tuple[str,str]]):
+        res = []
+        if not len(codes):
+            return
+        if not self.exists('analyzer_harness.py'):
+            with self.open('wb', 'analyzer_harness.py') as handle:
+                with open(os.path.join(dirname(__file__), 'analyzer_harness.py'), 'rb') as ah:
+                    handle.write(ah.read())
+        for i, c in enumerate(codes):
+            lang, code = c
+            if lang is None:
+                lang = 'txt'
+            path = ('analyzer', f'{cid}.{i}.{lang}')
+            with self.open('w', *path) as handle:
+                handle.write(code)
+            if lang == 'python':
+                stdout, stderr = self.shell('python3 ' + os.path.join(*path))
+                if stdout is not None:
+                    with self.open('wb', 'analyzer', f'{cid}.{i}.stdout') as handle:
+                        handle.write(stdout)
+                    stdout = stdout.decode()
+                if stderr is not None:
+                    with self.open('wb', 'analyzer', f'{cid}.{i}.stderr') as handle:
+                        handle.write(stderr)
+                    stderr = stderr.decode()
+                harness_stdout, harness_stderr = self.shell('python3 analyzer_harness.py ' + os.path.join(*path))
+                if harness_stdout is not None:
+                    harness_stdout = harness_stdout.decode()
+                if harness_stderr is not None:
+                    harness_stderr = harness_stderr.decode()
+            else:
+                harness_stdout, harness_stderr = None, None
+                stdout, stderr = None, None
+            run = None
+            if self.exists('analyzer', f'{cid}.{i}.{lang}.run'):
+                with self.open('r', 'analyzer', f'{cid}.{i}.{lang}.run') as handle:
+                    run = json.load(handle)
+            res.append([lang, code, stdout, stderr, harness_stdout, harness_stderr, run])
+        return res
 
     def git_clone(self):
         url = self.config('repo_url')
@@ -93,4 +135,4 @@ class Workspace:
             '-w', '/work',
             'polymerizer/analyzer:latest',
             '/bin/bash', '-c', shell_command
-        ], stdout=subprocess.PIPE).communicate()[0]
+        ], stdout=subprocess.PIPE).communicate()

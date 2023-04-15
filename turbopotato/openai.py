@@ -49,12 +49,16 @@ def extract_markdown_codes(result:CompletionResult):
         for line in choice['text'].splitlines():
             if not in_code:
                 if line.startswith('```'):
+                    lang = line[3:].strip()
+                    if not len(line):
+                        lang = None                    
                     in_code = True
                     continue
             else:
                 if line.startswith('```'):
                     in_code = False
-                    codes.append('\n'.join(buf))
+                    codes.append([lang, '\n'.join(buf)])
+                    lang = None
                     buf = []
                     continue
                 buf.append(line)
@@ -96,8 +100,7 @@ def completion(p:Prompt, replacements:dict[str,str], cache_ctx:dict|None=None, d
                 'ctx': cache_ctx,
                 'replacements': replacements,
                 'args': args,
-                'result': result,
-                'code_outputs': extract_markdown_codes(result)
+                'result': result
             }
             handle.write(json.dumps(info))
     else:

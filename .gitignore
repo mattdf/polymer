@@ -1,0 +1,10 @@
+__pycache__
+config.py
+cache.openai
+.npm
+.config
+.python_history
+.bash_history
+tmp
+repos
+work
