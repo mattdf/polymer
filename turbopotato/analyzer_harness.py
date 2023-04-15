@@ -1,8 +1,9 @@
+# Extracts all the top-level symbols from a python file & runs them
 import sys
 import imp
 import json
 r = dict()
-x = imp.load_source('*', sys.argv[1])
+x = imp.load_source('*', sys.argv[1])  # TODO: replace with importlib
 for _ in dir(x):
     if _.startswith('_'):
         continue

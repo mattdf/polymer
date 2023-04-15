@@ -15,6 +15,7 @@
         <div id="chat-container">
             <div id="tab-buttons-left">
                 <button id="chat-tab-btn" class="active-tab">Chat</button>
+                <button id="workspaces-tab-btn">Workspaces</button>
                 <button id="code-tab-btn">Code</button>
                 <button id="analysis-tab-btn">Analysis</button>
             </div>
@@ -26,6 +27,9 @@
                     <input type="text" id="message-input" placeholder="Type your message...">
                     <button type="submit">Send</button>
                 </form>
+            </div>
+            <div id="workspaces-tab" style="display: none;">
+                <ul id="workspaces"></ul>
             </div>
             <div id="code-tab" style="display: none;">
                 <div id="code-editor">

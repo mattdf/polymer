@@ -11,7 +11,7 @@ if not os.path.exists(WORKDIRS):
 
 def workspace_for_repo(repo_url):
     sh = sexyhash(repo_url)
-    pl = Workspace(os.path.join(WORKDIRS, sh))
+    pl = Workspace(sh, os.path.join(WORKDIRS, sh))
     if not pl.exists('potato.json'):
         with pl.open('w', 'potato.json') as handle:
             handle.write(json.dumps({'repo_url': repo_url}))
@@ -19,12 +19,17 @@ def workspace_for_repo(repo_url):
     return sh, pl
 
 def workspace_by_name(name):
-    return Workspace(os.path.join(WORKDIRS, name))
+    return Workspace(name, os.path.join(WORKDIRS, name))
 
+def workspaces_list():
+    for _ in os.listdir(WORKDIRS):
+        if _[0] not in ('_', '.') and os.path.isdir(os.path.join(WORKDIRS, _)):
+            yield _ 
 class Workspace:
     workdir:str
     _config:dict
-    def __init__(self, workdir:str):
+    def __init__(self, guid, workdir:str):
+        self.guid = guid
         self.workdir = realpath(workdir)        
         self.statedir = self.path('analyzer')
         for _ in [self.workdir, self.statedir]:
@@ -51,7 +56,7 @@ class Workspace:
             self._config = dict()
         return self
 
-    def config(self, k, v=None, unset=False, default=None):
+    def config(self, k=None, v=None, unset=False, default=None):
         if k is None:
             return self._config
         if v is None:

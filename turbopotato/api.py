@@ -11,7 +11,7 @@ from . import codextract
 from .openai import OPENAI_API_KEY, completion, extract_markdown_codes
 from .codextract import ExtractedInfo
 from .prompts import PROMPTS
-from .pipeline import workspace_for_repo, workspace_by_name
+from .pipeline import workspace_for_repo, workspace_by_name, workspaces_list
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), 'static')), name="static")
@@ -174,3 +174,8 @@ async def analyze(workspace_id:str, data:AnalyzeInput):
         with w.open('w', *ajpath) as handle:
             handle.write(json.dumps(info))
         return info
+
+@app.get('/workspaces')
+async def workspaces():
+    return {p.guid: p.config() for p in map(workspace_by_name, workspaces_list())}
+        

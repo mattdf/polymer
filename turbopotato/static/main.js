@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
         workspace_id = wlh.slice(1);
         load_repo(workspace_id);
     }
-
+    
+    loadWorkspaces();
     loadPrompts();
 
     async function http_get(path) {
@@ -79,6 +80,29 @@ document.addEventListener("DOMContentLoaded", () => {
             se.innerHTML = k + (v.description ? ': ' + v.description : '');
             se.setAttribute('value', k);
             ap.appendChild(se);
+        }
+    }
+
+    async function loadWorkspaces() {
+        const ws = document.getElementById('workspaces');
+        for( const [k,v] of Object.entries(await http_get('/workspaces')) ) {
+            const li = document.createElement('li');
+            const b = document.createElement('a');
+            b.setAttribute('href', `#${k}`);
+            b.innerText = k;
+            b.addEventListener('click', (event) => {
+                event.preventDefault();
+                load_repo(k);
+            });
+            li.appendChild(b);
+            const a = document.createElement('ul');
+            for( const [x,y] of Object.entries(v) ) {
+                const c = document.createElement('li');
+                c.innerText = `${x}: ${y}`
+                a.appendChild(c);
+            }
+            li.appendChild(a);
+            ws.appendChild(li);
         }
     }
 
@@ -171,11 +195,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await fetch("/repo/" + name, {
             method: "GET",
             headers: {"Content-Type": "application/json"}
-        });
+        });        
     
         if (response.ok) {
             const x = await response.json();
             displayList(x.data.items);
+            workspace_id = name;
         } else {
             alert("Failed to load the list from the endpoint.");
         }
@@ -339,9 +364,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function toggleTabVisibilityLeft(tabId) {
         const chatTab = document.getElementById("chat-tab");
+        const workspacesTab = document.getElementById("workspaces-tab");
         const codeTab = document.getElementById("code-tab");
         const analTab = document.getElementById("analysis-tab");
         const chatTabBtn = document.getElementById("chat-tab-btn");
+        const workspacesTabBtn = document.getElementById("workspaces-tab-btn");
         const codeTabBtn = document.getElementById("code-tab-btn");
         const analTabBtn = document.getElementById("analysis-tab-btn");
 
@@ -349,23 +376,38 @@ document.addEventListener("DOMContentLoaded", () => {
             chatTab.style.display = "flex";
             codeTab.style.display = "none";
             analTab.style.display = "none";
+            workspacesTab.style.display = "none";
             chatTabBtn.classList.add("active-tab");
             codeTabBtn.classList.remove("active-tab");
             analTabBtn.classList.remove("active-tab");
+            workspacesTabBtn.classList.remove("active-tab");
         } else if (tabId === "code-tab") {
             chatTab.style.display = "none";
             codeTab.style.display = "flex";
             analTab.style.display = "none";
+            workspacesTab.style.display = "none";
             chatTabBtn.classList.remove("active-tab");
             codeTabBtn.classList.add("active-tab");
             analTabBtn.classList.remove("active-tab");
+            workspacesTabBtn.classList.remove("active-tab");
         } else if( tabId == 'analysis-tab' ) {
             chatTab.style.display = "none";
             codeTab.style.display = "none";
             analTab.style.display = "flex";
+            workspacesTab.style.display = "none";
             chatTabBtn.classList.remove("active-tab");
             codeTabBtn.classList.remove("active-tab");
             analTabBtn.classList.add("active-tab");
+            workspacesTabBtn.classList.remove("active-tab");
+        } else if( tabId == 'workspaces-tab' ) {
+            chatTab.style.display = "none";
+            codeTab.style.display = "none";
+            analTab.style.display = "none";
+            workspacesTab.style.display = "flex";
+            chatTabBtn.classList.remove("active-tab");
+            codeTabBtn.classList.remove("active-tab");
+            analTabBtn.classList.remove("active-tab");
+            workspacesTabBtn.classList.add("active-tab");
         }
     }
 
@@ -446,6 +488,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("code-tab-btn").addEventListener("click", (event) => {
         event.preventDefault();
         toggleTabVisibilityLeft("code-tab");
+    });
+
+    document.getElementById("workspaces-tab-btn").addEventListener("click", (event) => {
+        event.preventDefault();
+        toggleTabVisibilityLeft("workspaces-tab");
     });
 
     document.getElementById("load-list-btn").addEventListener("click", (event) => {
