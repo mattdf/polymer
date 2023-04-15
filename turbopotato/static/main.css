@@ -270,6 +270,25 @@ input[type="checkbox"] {
     line-height: 1em;
 }
 
+.res-output {
+    margin: 10px;
+    padding: 10px;
+    width: 100%;
+    background: #eee;
+}
+
+pre {
+    background: #333;
+}
+
+pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+.string { color: green; }
+.number { color: darkorange; }
+.boolean { color: blue; }
+.null { color: magenta; }
+.key { color: red; }
+
+
 #analysis-results li > label {
 }
 

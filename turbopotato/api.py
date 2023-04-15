@@ -168,12 +168,14 @@ async def analyze(workspace_id:str, data:AnalyzeInput):
         'parent_cid': None
     })
     ajpath = 'analyzer', info['cid'] + '.json'
-    if True or not w.exists(*ajpath):
+    if not w.exists(*ajpath):
         info['code_outputs'] = extract_markdown_codes(info['result'])
         info['run'] = w.run_codes(info['cid'], info['code_outputs'])
         with w.open('w', *ajpath) as handle:
             handle.write(json.dumps(info))
         return info
+    with w.open('r', *ajpath) as handle:
+            return json.load(handle)
 
 @app.get('/workspaces')
 async def workspaces():

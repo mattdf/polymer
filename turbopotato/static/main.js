@@ -1,4 +1,5 @@
 let workspace_id = null;
+var converter = new showdown.Converter();
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -201,6 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const x = await response.json();
             displayList(x.data.items);
             workspace_id = name;
+            window.location.hash = x.workspace_id;
         } else {
             alert("Failed to load the list from the endpoint.");
         }
@@ -299,11 +301,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const label = liElement.querySelector("label");
             const name = label.textContent;
 
-            if (checkbox.checked) {
-                if (liElement.classList.contains("data-item-file"))     {
-                    const fullPath = [...path, name].join("/");
-                    checkedFiles.push(fullPath);
-                }
+            if (checkbox.checked && liElement.classList.contains("data-item-file"))     {
+                const fullPath = [...path, name].join("/");
+                checkedFiles.push(fullPath);
             }
 
             const nestedContainer = liElement.querySelector("div");
@@ -431,6 +431,27 @@ document.addEventListener("DOMContentLoaded", () => {
         return checkedFiles;
     }
 
+    // https://stackoverflow.com/questions/4810841/pretty-print-json-using-javascript
+    // https://jsfiddle.net/KJQ9K/554/
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            var cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+
     function addAnalysis(result)
     {        
         if( document.getElementById(result.cid) ) {
@@ -441,17 +462,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const e = document.createElement('div');
         e.setAttribute('id', result.cid);
+        e.classList.add("res-output");
 
-        const f = document.createElement('pre');
-        f.innerHTML = result.result.choices[0].text;
+        const f = document.createElement('div');
+        f.innerHTML = converter.makeHtml(result.result.choices[0].text);
         e.appendChild(f);
+
+        if( result.run ) {
+            e.appendChild(document.createElement('hr'));
+            const g = document.createElement('pre');
+            g.innerHTML = syntaxHighlight(JSON.stringify(result.run[0][6], undefined, 4));
+            e.appendChild(g);
+        }        
 
         let append_to;
         if( result.ctx.parent_cid ) {
             append_to = document.getElementById(result.ctx.parent_cid);
         }
         if( append_to === undefined ) {
-            append_to = document.getElementById('analysis-tab');            
+            append_to = document.getElementById('analysis-tab-outputs');
         }
         append_to.appendChild(e);
     }

@@ -45,13 +45,13 @@ add_prompt(Prompt(
     text='''
 You are an expert Solidity smart contractr auditor and formal model prover.
 I am an expert in Solidity contracts, formal modelling and security analysis, it is not necessary to explain it to me, I just need your analysis.
-Please outlining the Solidity code below, very briefly outlining the intent for each function and how a user could cause it to malfunction.
+Please briefly describe the Solidity code below, outlining the intent for each function and how a user could cause it to malfunction.
 
 ```solidity
 $$CODE$$
 ```
 
-Provide your response as a Python function which returns the a list of the opposites of correctly working or how an attacker could cause the contract to malfunction.
+In your response provide a Python function which returns the a list of the opposites of correctly working or how an attacker could cause the contract to malfunction.
 
 ```python
 def tests():
@@ -74,10 +74,14 @@ add_prompt(Prompt(
     text='''
 You are a theorem proving and formal model checking expert for Solidity smart contracts to identify vulnerabilities that uses Z3,     PySMT and carefully crafted Solidity contracts to demonstrate vulnerabilities.
 Do not make a judgement that the contract does not contain any vulnerabilities, you must provide a demonstration.
-You must provide Python functions which create a Z3 or PySMT model to test the vulnerability.
-Each function returns the parameters used demonstrate the bug, or `None` if the model is unsatisfied.
+You must provide a Python function which creates a Z3 or PySMT model to test the vulnerability.
+The function returns the parameters used demonstrate the bug, or `None` if the model is unsatisfied.
 
 For Z3 use 256 bit `BitVec` to simulate Solidity's `uint` type.
 
+```solidity
 $$CODE$$
+```
+
+Wrap your python function in markdown code below your notes. The python function you provide must be callable without any arguments.
 '''))
