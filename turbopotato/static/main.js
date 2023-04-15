@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     toggleNestedListVisibility(liElement);
                 }
                 if (item.type !== "contract") {
-                    location.hash = "#pre-code-block." + item.data[0] + "-" + item.data[1];
+                    location.hash = "#" + item.data[0] + "-" + item.data[1];
                 }
             };
             liElement.appendChild(label);

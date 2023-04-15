@@ -85,3 +85,22 @@ $$CODE$$
 
 Wrap your python function in markdown code below your notes. The python function you provide must be callable without any arguments.
 '''))
+
+add_prompt(Prompt(
+    name='solidity-reentrency',
+    cats=['solidity', 'reentrency'],
+    vars=['CODE'],
+    model='text-davinci-003',
+    text='''
+You are a theorem proving and formal model checking expert for Solidity smart contracts to identify vulnerabilities that uses carefully crafted Solidity contracts to demonstrate vulnerabilities.
+Do not make a judgement that the contract does not contain any vulnerabilities, you must provide a demonstration.
+Please identify which of the functions in the following code has a re-entrency bug and how it can be triggered by another contract.
+You must provide minimal Solidity contract which creates invokes the vulnerable method to exploit the reentrency bug.
+If the vulnerable contract transfers Ether, your contract must implement a default payable function which calls the exploitable contract.
+
+```solidity
+$$CODE$$
+```
+
+Wrap your minimal Solidity contract in markdown code below your notes.
+'''))
