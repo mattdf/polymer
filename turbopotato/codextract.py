@@ -31,8 +31,11 @@ class ModifierInfo(_BaseInfo):
 @dataclass
 class EventInfo(_BaseInfo):
     def signature(self):
-        sig = re.match(r'\s*(?P<sig>(event\s+)[^;]+)', self.source(' ')).group('sig')
-        return re.sub(r'\s+', ' ', sig)
+        source = re.sub(r'[\s ]+', ' ', self.source(' ').replace('\n', ' ').replace('\r', '').replace('\t', ' '))
+        import json
+        print(json.dumps({'s':source}))
+        sig = re.match(r'\s*(?P<sig>(event\s+)[^;)]*)', source).group('sig')
+        return re.sub(r'[\s ]+', ' ', sig)
 
 @dataclass
 class ContractInfo(_BaseInfo):
@@ -130,7 +133,7 @@ def analyze_lines(name, lines:list[str]):
                     in_contract.collect('modifiers', in_modifier.finish(i-1, ModifierInfo, lines))
                     in_modifier = None
                 elif in_event:
-                    in_contract.collect('events', in_event.finish(i-1, EventInfo, lines))
+                    in_contract.collect('events', in_event.finish(i, EventInfo, lines))
                     in_event = None
                 toplevel.collect('contracts', in_contract.finish(i-1, ContractInfo, lines))
                 in_contract = None
@@ -146,7 +149,7 @@ def analyze_lines(name, lines:list[str]):
                     in_contract.collect('modifiers', in_modifier.finish(i-1, ModifierInfo, lines))
                     in_modifier = None
                 if in_event:
-                    in_contract.collect('events', in_event.finish(i-1, EventInfo, lines))
+                    in_contract.collect('events', in_event.finish(i, EventInfo, lines))
                     in_event = None
                 m = re.match(r'\s*event\s+([^\s{(]+)', line)
                 in_event = Collector(m.group(1).strip(), i)
@@ -161,7 +164,7 @@ def analyze_lines(name, lines:list[str]):
                     in_contract.collect('functions', in_function.finish(i-1, FunctionInfo, lines))
                     in_function = None
                 elif in_event:
-                    in_contract.collect('events', in_event.finish(i-1, EventInfo, lines))
+                    in_contract.collect('events', in_event.finish(i, EventInfo, lines))
                     in_event = None
                 m = re.match(r'\s*modifier\s+([^\s{(]+)', line)
                 in_modifier = Collector(m.group(1), i)
@@ -180,7 +183,7 @@ def analyze_lines(name, lines:list[str]):
                     in_contract.collect('functions', in_function.finish(i-1, FunctionInfo, lines))
                     in_function = None
                 if in_event:
-                    in_contract.collect('events', in_event.finish(i-1, EventInfo, lines))
+                    in_contract.collect('events', in_event.finish(i, EventInfo, lines))
                     in_event = None
                 m = re.match(r'\s*(function|fallback|receive|constructor)\s*[({]?', line)
                 if not m:                    
