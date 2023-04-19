@@ -1,6 +1,6 @@
 PYTHON3=python3
 PROJNAME=polymerizer
-MODNAME=turbopotato
+MODNAME=polymer
 
 all: api
 

@@ -1,4 +1,4 @@
-# Polymer (aka Turbo Potato / SkyNet)
+# Polymer
 
 Is powered by insomnia & laziness, a lot of the code was written by ChatGPT.
 
