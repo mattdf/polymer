@@ -16,11 +16,14 @@ from .pipeline import workspace_for_repo, workspace_by_name, workspaces_list
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), 'static')), name="static")
 
+
 class UrlInput(BaseModel):
     url: str
 
+
 class FileList(BaseModel):
     files: List[str]
+
 
 class TreeNode(BaseModel):
     name: str
@@ -28,10 +31,13 @@ class TreeNode(BaseModel):
     data: Union[List, None]
     children: List[Union['TreeNode', None]] = Field(default_factory=list)
 
+
 class ListData(BaseModel):
     items: List[TreeNode]
 
+
 TreeNode.update_forward_refs()
+
 
 def create_tree_node(path: str, is_directory: bool) -> Union[TreeNode, None]:
     if is_directory:
@@ -47,6 +53,7 @@ def create_tree_node(path: str, is_directory: bool) -> Union[TreeNode, None]:
     if os.path.splitext(path)[1] == ".sol":
         return TreeNode(name=os.path.basename(path), type="file")
 
+
 def directory_to_list_data(dir_path: str) -> ListData:
     if not os.path.isdir(dir_path):
         raise ValueError(f"The provided path is not a directory: {dir_path}")
@@ -58,6 +65,7 @@ def directory_to_list_data(dir_path: str) -> ListData:
         if node:
             root_items.append(node)
     return ListData(items=[TreeNode(name=os.path.basename(dir_path), type="directory", children=root_items)])
+
 
 def create_contract_nodes(info:ExtractedInfo, lines) -> ListData:
     contracts = []
@@ -88,13 +96,16 @@ def create_contract_nodes(info:ExtractedInfo, lines) -> ListData:
         contracts.append(TreeNode(name=c.name, type="contract", data=[c.line_start, c.line_end], children=children))
     return ListData(items=contracts)
 
+
 @app.get("/")
 async def serve_index_html():
     return FileResponse(os.path.join(os.path.dirname(__file__), 'static', 'index.html'))
 
+
 @app.get("/favicon.ico")
 async def serve_index_html():
     return FileResponse(os.path.join(os.path.dirname(__file__), 'static', 'favicon.ico'))
+
 
 @app.post("/message/")
 async def chatbot_response(message: str):
@@ -112,16 +123,19 @@ async def chatbot_response(message: str):
     response.raise_for_status()
     return {"response": response.json()["choices"][0]["text"]}
 
+
 @app.get("/repo/{workspace_id}")
 async def workspace(workspace_id:str):
     p = workspace_by_name(workspace_id)
     return dict(workspace_id=workspace_id, data=directory_to_list_data(p.path('repo')))
+
 
 @app.post("/repo.clone/")
 async def repo_clone(repo: UrlInput):
     sh, p = workspace_for_repo(repo.url)
     p.git_clone()
     return dict(workspace_id=sh, data=directory_to_list_data(p.path('repo')))
+
 
 @app.get("/prompts")
 async def prompts():
@@ -131,6 +145,7 @@ async def prompts():
         'model': v.model,
     } for k, v in PROMPTS.items()}
 
+
 def _collect_files(workspace_id, file_list):
     ws = workspace_by_name(workspace_id)
     collected_lines = []
@@ -138,6 +153,7 @@ def _collect_files(workspace_id, file_list):
         with ws.open('r', file) as f:
             collected_lines += f.readlines()
     return collected_lines
+
 
 @app.post("/source/{workspace_id}")
 async def source(workspace_id, file_list: FileList):    
@@ -147,10 +163,12 @@ async def source(workspace_id, file_list: FileList):
     joined_lines = "".join(collected_lines)
     return {"contracts": contracts_list, "lines": joined_lines}
 
+
 class AnalyzeInput(BaseModel):
     prompt: str
     files: List[str]
     lines: List[str]
+
 
 @app.post("/analyze/{workspace_id}")
 async def analyze(workspace_id:str, data:AnalyzeInput):
@@ -176,6 +194,7 @@ async def analyze(workspace_id:str, data:AnalyzeInput):
         return info
     with w.open('r', *ajpath) as handle:
             return json.load(handle)
+
 
 @app.get('/workspaces')
 async def workspaces():

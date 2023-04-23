@@ -9,6 +9,7 @@ WORKDIRS = os.path.join(dirname(dirname(__file__)), 'work')
 if not os.path.exists(WORKDIRS):
     os.mkdir(WORKDIRS)
 
+
 def workspace_for_repo(repo_url):
     sh = sexyhash(repo_url)
     pl = Workspace(sh, os.path.join(WORKDIRS, sh))
@@ -18,16 +19,21 @@ def workspace_for_repo(repo_url):
         pl.reload()                
     return sh, pl
 
+
 def workspace_by_name(name):
     return Workspace(name, os.path.join(WORKDIRS, name))
+
 
 def workspaces_list():
     for _ in os.listdir(WORKDIRS):
         if _[0] not in ('_', '.') and os.path.isdir(os.path.join(WORKDIRS, _)):
-            yield _ 
+            yield _
+
+
 class Workspace:
     workdir:str
     _config:dict
+
     def __init__(self, guid, workdir:str):
         self.guid = guid
         self.workdir = realpath(workdir)        

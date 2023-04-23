@@ -6,17 +6,21 @@ from dataclasses import dataclass, field
 
 # Reference: https://docs.soliditylang.org/en/latest/grammar.html
 
+
 @dataclass
 class _BaseInfo:
     name: str
     line_start:int
     line_end:int
     lines:list[str] = field(default_factory=list)
+
     def source(self, j='\n'):
         return j.join(self.lines)
 
+
 class UnCaught(_BaseInfo):
     pass
+
 
 @dataclass
 class FunctionInfo(_BaseInfo):
@@ -24,9 +28,11 @@ class FunctionInfo(_BaseInfo):
         sig = re.match(r'\s*(?P<sig>(fallback|receive|constructor|function)[^;{]+)', self.source(' ')).group('sig')
         return re.sub(r'\s+', ' ', sig)
 
+
 @dataclass
 class ModifierInfo(_BaseInfo):
     pass
+
 
 @dataclass
 class EventInfo(_BaseInfo):
@@ -34,6 +40,7 @@ class EventInfo(_BaseInfo):
         source = re.sub(r'[\s ]+', ' ', self.source(' ').replace('\n', ' ').replace('\r', '').replace('\t', ' '))
         sig = re.match(r'\s*(?P<sig>(event\s+)[^;)]*)', source).group('sig')
         return re.sub(r'[\s ]+', ' ', sig)
+
 
 @dataclass
 class ContractInfo(_BaseInfo):
@@ -48,6 +55,7 @@ class ContractInfo(_BaseInfo):
     is_abstract:bool=False
     uncaught:list[UnCaught] = field(default_factory=list)
 
+
 @dataclass
 class ExtractedInfo(_BaseInfo):
     pragmas:list[str] = field(default_factory=list)
@@ -56,7 +64,9 @@ class ExtractedInfo(_BaseInfo):
     types:list[str] = field(default_factory=list)
     contracts:list[ContractInfo] = field(default_factory=list)
 
+
 T = TypeVar('T')
+
 
 class Collector(Generic[T]):
     def __init__(self, name:str, line_start:int, **extra):
@@ -64,8 +74,10 @@ class Collector(Generic[T]):
         self.line_start = line_start
         self.extra = extra
         self._ = defaultdict[str,list](list)
+
     def collect(self, cat:str, what):
         self._[cat].append(what)
+
     def finish(self, line_end, obj:Type[T], lines:list[str]):
         args = dict(
             name=self.name,
@@ -76,6 +88,7 @@ class Collector(Generic[T]):
             args[k] = v
         args.update(self.extra)
         return obj(**args)
+
 
 def analyze_lines(name, lines:list[str]):
     toplevel:Collector[ExtractedInfo] = Collector(name, 0)
@@ -204,6 +217,7 @@ def analyze_lines(name, lines:list[str]):
         toplevel.collect('contracts', in_contract.finish(i, ContractInfo, lines))
     return toplevel.finish(i, ExtractedInfo, lines)
 
+
 def extract_file(filename:str=None,code:str=None):
     if filename is not None:
         with open(filename, 'r') as handle:
@@ -213,6 +227,7 @@ def extract_file(filename:str=None,code:str=None):
     if code is None:
         raise RuntimeError("No code specified!")
     return analyze_lines(filename, lines), lines
+
 
 def main(argv:list[str]):
     if len(argv) < 2:
@@ -251,6 +266,7 @@ def main(argv:list[str]):
                 print('\t\t\t', i, lines[i])
         print()
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

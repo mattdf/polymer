@@ -3,6 +3,7 @@ from functools import reduce
 from operator import iconcat
 from base64 import b32encode
 
+
 def sexyhash(*args, **kwa):
     h = sha256()
     for _ in list(args) + reduce(iconcat, sorted(list(kwa.items())), []):

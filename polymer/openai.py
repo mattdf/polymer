@@ -4,6 +4,9 @@ import json
 from typing import TypedDict
 from typing import Optional
 from os.path import dirname
+import openai
+from .prompts import Prompt
+from .utils import sexyhash
 
 OPENAI_API_KEY:Optional[str] = None
 try:
@@ -15,24 +18,44 @@ except ImportError:
 if OPENAI_API_KEY is None:
     raise RuntimeError('Must specify "OPENAI_API_KEY" in config.py or environment')
 
-import openai
+
 openai.api_key = OPENAI_API_KEY
 
-from .prompts import Prompt
-from .utils import sexyhash
 
 CACHE_DIR = os.path.join(dirname(dirname(__file__)), 'cache.openai')
 if not os.path.exists(CACHE_DIR):
     os.mkdir(CACHE_DIR)
 
+
+class ChatCompletionChoice(TypedDict):
+    index: int
+    logprobs: dict[str, float]
+    text: str
+    finish_reason: str
+
+
+class ChatCompletion(TypedDict):
+    id: str
+    object: str
+    created: int
+    model: str
+    choices: list[ChatCompletionChoice]
+    prompt: str
+    session: str
+    status: str
+
+
 class CompletionChoice(TypedDict):
     index: int
     text: str
+
 
 class CompletionUsage(TypedDict):
     completion_tokens: int
     prompt_tokens: int
     total_tokens: int
+
+
 class CompletionResult(TypedDict):
     choices: list[CompletionChoice]
     created: int
@@ -40,6 +63,7 @@ class CompletionResult(TypedDict):
     model: str
     object: str
     usage: CompletionUsage
+
 
 def extract_markdown_codes(result:CompletionResult):
     codes = []
@@ -63,6 +87,7 @@ def extract_markdown_codes(result:CompletionResult):
                     continue
                 buf.append(line)
     return codes
+
 
 def completion(p:Prompt, replacements:dict[str,str], cache_ctx:dict|None=None, default_model:str='text-davinci-003', default_max_tokens:int=1000):
     args: dict[str,str] = dict()    
@@ -107,3 +132,25 @@ def completion(p:Prompt, replacements:dict[str,str], cache_ctx:dict|None=None, d
         with open(cp, 'r') as handle:
             info = json.load(handle)
     return info
+
+
+def chatcompletion():
+    model = "gpt-4"
+    temperature = 0.6
+    presence_penalty = 0
+    top_p = 1
+
+    system_prompt = "x"
+    user_prompt = "y"
+
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages
+    )
